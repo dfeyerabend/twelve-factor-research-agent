@@ -1,6 +1,8 @@
 import { z } from "zod";
 import crypto from "crypto";
 import {createLLM, LLMConfig} from "./llm"
+import {formatDate, safeStringify, printFiles, printMessages} from "./utils/display_output"
+
 
 // ============================================
 // TYPES
@@ -174,7 +176,7 @@ function createPlan(userRequest: string): Task[] {
         {
             id: writeId,
             name: "write_summary",
-            content: "Write: summary to file", // Konvention: beginnt mit "Write:"
+            content: "Write: Write the result of the research task in a summary to file", // Konvention: beginnt mit "Write:"
             status: "pending",
             dependencies: [researchId]
         },
@@ -330,7 +332,7 @@ class AgentRunner {
     // Führt genau eine ausführbare Task aus ODER finalisiert den Run, wenn nichts mehr runnable ist.
 
     async step(state: AgentState): Promise<AgentState> {
-        console.log(`\n[STEP ${state.step}] Searching next runnable task...`); // Debug: zeigt aktuellen Step
+        console.log(`[STEP ${state.step}] Searching next runnable task...`); // Debug: zeigt aktuellen Step
 
         // ============================================
         // GET NEXT EXECUTABLE TASK
@@ -354,7 +356,7 @@ class AgentRunner {
             return state_after_complete; // gibt finalisierten State zurück
         }
 
-        console.log(`[STEP ${state.step}] Running task: ${nextTask.name} (${nextTask.id.slice(0, 8)})`); // Debug: welche Task wird jetzt ausgeführt
+        console.log(`[STEP ${state.step}] Running task: ${nextTask.name} (ID: ${nextTask.id.slice(0, 8)})`); // Debug: welche Task wird jetzt ausgeführt
 
         // ============================================
         // RUN TASK WITH LLM
@@ -524,7 +526,7 @@ class AgentRunner {
 
         while (state.status !== "completed" && state.step < maxSteps) {
             const beforeStep = state.step; // merkt sich den Step vor dem step()-Call
-            console.log(`\n➡️  Run Loop | step = ${state.step} | status = ${state.status}`); // High-level Fortschritt
+            console.log(`\n➡️  Run Agent Loop | step = ${state.step} | status = ${state.status}`); // High-level Fortschritt
             state = await this.step(state); // führt genau eine Task oder finalisiert aus
 
             console.log(`⬅️  Step finished | newStep = ${state.step} | status = ${state.status}`); // Ergebnis des step()-Calls
@@ -546,7 +548,7 @@ class AgentRunner {
             }
         }
 
-        console.log(`🏁 Agent finished | finalStep=${state.step} | status=${state.status}`);
+        console.log(`\n🏁 Agent finished | finalStep=${state.step} | status=${state.status}`);
         return state;
     }
 }
@@ -584,17 +586,51 @@ async function runDemo() {
     const initialState = runner.initState(userRequest); // erstellt Start-State inkl. Plan
     const finalState = await runner.run(initialState, 20); // führt Tasks aus (maxSteps als Safety)
 
-    console.log("=== FINAL STATUS ===");
-    console.log(finalState.status);
+    //console.log("=== FINAL STATUS ===");
+    //console.log(finalState.status);
 
-    console.log("=== FINAL TASKS ===");
-    console.log(finalState.tasks);
+    console.log("=== FINAL TASKS (table) ===");
+    console.table(
+        finalState.tasks.map((t) => {
+            const startedAt = typeof t.startedAt === "number" ? formatDate(t.startedAt) : undefined;
+            const completedAt = typeof t.completedAt === "number" ? formatDate(t.completedAt) : undefined;
+            const durationMs =
+                typeof t.startedAt === "number" && typeof t.completedAt === "number"
+                    ? t.completedAt - t.startedAt
+                    : undefined;
 
-    console.log("=== FILES ===");
-    console.log(finalState.files);
+            return {
+                name: t.name,
+                status: t.status,
+                startedAt,
+                completedAt,
+                durationMs,
+                resultSummary: (t as any).result?.summary,
+            };
+        })
+    );
 
-    console.log("=== LAST MESSAGES ===");
-    console.log(finalState.messages.slice(-8));
+    console.log("\n=== FINAL TASKS (DETAILS) ===");
+    for (const t of finalState.tasks) {
+        console.log(`\n--- ${t.name} | ${t.status} ---`);
+        if (typeof t.startedAt === "number") console.log("startedAt   :", formatDate(t.startedAt));
+        if (typeof t.completedAt === "number") console.log("completedAt :", formatDate(t.completedAt));
+        if (typeof t.startedAt === "number" && typeof t.completedAt === "number") {
+            console.log(`durationSec : ${(t.completedAt - t.startedAt)/1000}`);
+        }
+        console.log("content     :", t.content);
+        console.log("result      :", safeStringify((t as any).result, 2));
+        if (t.error) console.log("error       :", t.error);
+    }
+
+    console.log("\n=== FILES ===");
+    //console.log(JSON.stringify(finalState.files, null, 2));
+    printFiles(finalState.files);
+
+    console.log("\n=== LAST MESSAGES (tail) ===");
+    //console.log(JSON.stringify(finalState.messages.slice(-8), null, 2));
+    printMessages(finalState.messages, 8);
+
 }
 
 // Run the demo

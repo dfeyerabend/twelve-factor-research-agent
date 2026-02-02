@@ -176,6 +176,10 @@ src/
 ├── llm.ts
 └── index.ts
 ```
+### Output Formatting
+
+The file `display_output.ts` contains helper functions used **only for CLI output formatting**.
+It transforms the internal agent state into a more readable console representation without modifying or affecting the actual agent state or logic.
 
 ---
 
