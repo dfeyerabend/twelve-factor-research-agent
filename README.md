@@ -18,13 +18,12 @@ The goal is not feature completeness, but a **clear, explainable, and inspectabl
 
 ---
 
-## Features (Current State)
+## Planned Features
 
 - Multi-agent architecture
 - Supervisor-driven orchestration
 - Specialized sub-agents (Researcher, Writer)
 - Explicit tool abstraction
-- Centralized LLM factory
 - Stateless reducer-based state management
 - CLI-based execution entrypoint
 
