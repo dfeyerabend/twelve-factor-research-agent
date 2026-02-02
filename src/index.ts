@@ -93,14 +93,9 @@ interface SubAgentTask {
     completedAt?: number;
 }
 
-// ============================================
-// TOOLS
-// ============================================
-
-
 
 // ============================================
-// REDUCER
+// REDUCER LOGIC
 // ============================================
 
 type AgentAction =
@@ -214,7 +209,6 @@ function findNextRunnableTask(tasks: Task[]): Task | null {
     console.log(`No executable tasks found. Pending tasks remaining: ${pendingCount}`);
     return null;
 }
-
 
 // ============================================
 // SUPERVISOR EXECUTOR
@@ -637,4 +631,3 @@ async function runDemo() {
 runDemo().catch((err) => {
     console.error("Demo crashed:", err);
 });
-

@@ -35,19 +35,9 @@ The project is still under active development. Missing capabilities are document
 ## 12-Factor Agent Implementation
 
 ### 1. Natural Language → Tool Calls
-**Status:** Implemented (basic) ✅
+**Status:** In progress 🔧
 
-Tools are explicitly defined and callable via structured inputs.
-
-```ts
-export const planningTool = {
-  name: "plan",
-  description: "Create a high-level execution plan",
-  execute: async (input: { task: string }) => {
-    return { plan: `Plan for: ${input.task}` }
-  }
-}
-```
+Toll calls are only simulated at the moment
 
 ---
 
@@ -58,36 +48,37 @@ Prompts are explicitly defined in code and not hidden behind framework defaults.
 
 ---
 
-### 3. Own Your Context
-**Status:** Not implemented yet
+### 3. Own Your Context`
+**Status:** Not implemented yet ❌
 
 Context window composition and summarization are not yet explicitly managed.
 
 ---
 
 ### 4. Tools Are Functions
-**Status:** Implemented
+**Status:** In progress 🔧
 
-All tools are plain TypeScript functions with explicit inputs and outputs.
+Toll calls are only simulated at the moment
+All tools are planned to be Zod validated functions with explicit inputs and outputs.
 
 ---
 
 ### 5. Unified Memory
-**Status:** Not implemented yet
+**Status:** Not implemented yet ❌
 
 There is no persistent or shared memory layer at this stage.
 
 ---
 
 ### 6. Checkpointing
-**Status:** Not implemented yet
+**Status:** Not implemented yet ❌
 
 Execution state is not yet serializable for resume or replay.
 
 ---
 
 ### 7. Humans as Tools
-**Status:** Not implemented yet
+**Status:** Not implemented yet ❌
 
 No explicit human-in-the-loop tools are present yet.
 
@@ -108,7 +99,7 @@ await runAgentLoop(initialState, agentReducer)
 **Status:** Implemented (basic) ✅
 
 Errors from model output parsing/validation are compacted into a short retry instruction and stored in state/history
-TThe task is reset to pending for retry.
+The task is reset to pending for retry.
 
 ---
 
@@ -125,10 +116,10 @@ Each agent has a clearly scoped responsibility.
 ---
 
 ### 11. Trigger Anywhere
-**Status:** Partially implemented ✅
+**Status:** Partially implemented ❌
 
 The agent is currently triggered via CLI.
-The core logic is trigger-agnostic by design.
+
 
 ---
 
